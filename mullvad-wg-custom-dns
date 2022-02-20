@@ -1,0 +1,66 @@
+#!/bin/sh
+
+usage() {
+cat << EOF
+mullvad-wg-customdns -s [server name] -p [server pubkey] -a [account number] -d [dns ip]
+EOF
+}
+
+while getopts s:p:a:d: option
+do
+    case "${option}"
+        in
+        s)server=${OPTARG};;
+        p)server_pubkey=${OPTARG};;
+        a)acct_num=${OPTARG};;
+        d)dns=${OPTARG};;
+    esac
+done
+
+if [ -z "$server" ] || [ -z "$server_pubkey" ]; then
+    usage
+    echo "Must provide server name and pubkey from https://mullvad.net/en/servers/ "
+    exit 1
+elif [ -z "$acct_num" ]; then
+    usage
+    echo "Must provide Mullvad Account number"
+    exit 1
+fi
+
+# Check IP for failure
+if grep -q "not found" <<< $(host $server.mullvad.net); then
+    echo "Unable to resolve server IP"
+    exit 1
+fi
+
+server_ip=$(host $server.mullvad.net | sed 's/.*mullvad.net has address \(.*\)/\1/')
+priv_key=$(wg genkey)
+pub_key=$(echo $priv_key | wg pubkey)
+
+response=$(curl -sSL https://api.mullvad.net/app/v1/wireguard-keys \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Token $acct_num" \
+            -d '{"pubkey":"'$pub_key'"}' \
+          )
+
+# Check Response for failure
+if grep -q "ipv4_address" <<< "$response"; then
+    ipv4=$(echo $response | sed 's/.*ipv4_address\":\"\(.*\)\",\"ipv6.*/\1/')
+    ipv6=$(echo $response | sed 's/.*ipv6_address\":\"\(.*\)\".*/\1/')
+else
+    echo "Failure to authenticate with Mullvad API"
+    echo "$response"
+    exit 1
+fi
+
+cat << EOF
+[Interface]
+PrivateKey = $priv_key
+Address = $ipv4,$ipv6
+DNS = $dns
+
+[Peer]
+PublicKey = $server_pubkey
+AllowedIPs = 0.0.0.0/0,::0/0
+Endpoint = $server_ip:51820
+EOF
