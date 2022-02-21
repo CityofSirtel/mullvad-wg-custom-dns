@@ -3,12 +3,12 @@ A simple bash script to create Mullvad Wireguard config files with no DNS hijack
 I use it for running a local recursive DNS server through the vpn, default configs hijack all DNS requests.
 
 ```
-mullvad-wg-customdns -s SERVERNAME -a ACCOUNT_NUMBER -d DNS_IP -o OUTPUT_FILE
+mullvad-wg-custom-dns -s SERVERNAME -a ACCOUNT_NUMBER -d DNS_IP -o OUTPUT_FILE
 ```
 Get the server name from Mullvad [here](https://mullvad.net/en/servers/), ie at5-wireguard
 
 ```
-mullvad-wg-customdns -s at5-wireguard -a ACCOUNT_NUMBER -d '127.0.0.1' -o wg0.conf
+mullvad-wg-custom-dns -s at5-wireguard -a ACCOUNT_NUMBER -d '127.0.0.1' -o wg0.conf
 ```
 
 Make sure you have a free slot for a Wireguard key on your account before you create it, the script will generate a new one for you.
