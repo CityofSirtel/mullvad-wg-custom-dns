@@ -2,24 +2,24 @@
 
 usage() {
 cat << EOF
-mullvad-wg-customdns -s [server name] -p [server pubkey] -a [account number] -d [dns ip]
+mullvad-wg-customdns -s [server name] -a [account number] -d [dns ip] -o [output file]
 EOF
 }
 
-while getopts s:p:a:d: option
+while getopts s:a:d:o: option
 do
     case "${option}"
         in
         s)server=${OPTARG};;
-        p)server_pubkey=${OPTARG};;
         a)acct_num=${OPTARG};;
         d)dns=${OPTARG};;
+        o)file=${OPTARG};;
     esac
 done
 
-if [ -z "$server" ] || [ -z "$server_pubkey" ]; then
+if [ -z "$server" ] ; then
     usage
-    echo "Must provide server name and pubkey from https://mullvad.net/en/servers/ "
+    echo "Must provide server name from https://mullvad.net/en/servers/ "
     exit 1
 elif [ -z "$acct_num" ]; then
     usage
@@ -27,13 +27,22 @@ elif [ -z "$acct_num" ]; then
     exit 1
 fi
 
-# Check IP for failure
-if grep -q "not found" <<< $(host $server.mullvad.net); then
-    echo "Unable to resolve server IP"
+data=$(curl https://api.mullvad.net/www/relays/wireguard/ 2>/dev/null \
+        | sed 's/},{/}\n{/g' | grep $server
+      )
+
+if [ -z "$data" ]; then
+    echo "Please provide a valid Mullvad server hostname"
     exit 1
 fi
 
-server_ip=$(host $server.mullvad.net | sed 's/.*mullvad.net has address \(.*\)/\1/')
+if grep -q 'active":false' <<< "$data"; then
+    echo "Selected server is not currently active"
+    exit 1
+fi
+
+server_ip=$(echo "$data" | sed 's/.*"ipv4_addr_in":"\(.*\)","ipv6.*/\1/g')
+server_pubkey=$(echo "$data" | sed 's/.*"pubkey":"\(.*\)","multihop.*/\1/g')
 priv_key=$(wg genkey)
 pub_key=$(echo $priv_key | wg pubkey)
 
@@ -53,8 +62,7 @@ else
     exit 1
 fi
 
-cat << EOF
-[Interface]
+output="[Interface]
 PrivateKey = $priv_key
 Address = $ipv4,$ipv6
 DNS = $dns
@@ -62,5 +70,10 @@ DNS = $dns
 [Peer]
 PublicKey = $server_pubkey
 AllowedIPs = 0.0.0.0/0,::0/0
-Endpoint = $server_ip:51820
-EOF
+Endpoint = $server_ip:51820"
+
+if [ -z "$file" ]; then
+    tee "$file" < "$output"
+else
+    echo "$output"
+fi
