@@ -73,7 +73,7 @@ AllowedIPs = 0.0.0.0/0,::0/0
 Endpoint = $server_ip:51820"
 
 if [ -z "$file" ]; then
-    tee "$file" < "$output"
-else
     echo "$output"
+else
+    echo "$output" | tee "$file"
 fi
