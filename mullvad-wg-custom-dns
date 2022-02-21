@@ -32,7 +32,7 @@ data=$(curl https://api.mullvad.net/www/relays/wireguard/ 2>/dev/null \
       )
 
 if [ -z "$data" ]; then
-    echo "Please provide a valid Mullvad server hostname"
+    echo "Please provide a valid Mullvad Wireguard server hostname"
     exit 1
 fi
 
@@ -75,5 +75,5 @@ Endpoint = $server_ip:51820"
 if [ -z "$file" ]; then
     echo "$output"
 else
-    echo "$output" | tee "$file"
+    echo "$output" > "$file"
 fi
