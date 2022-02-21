@@ -31,7 +31,7 @@ data=$(curl https://api.mullvad.net/www/relays/wireguard/ 2>/dev/null \
         | sed 's/},{/}\n{/g' | grep $server
       )
 
-if [ -z "$data" ]; then
+if [ -z "$data" ] || [ $(wc -l <<< "$data") -gt 1 ]; then
     echo "Please provide a valid Mullvad Wireguard server hostname"
     exit 1
 fi
