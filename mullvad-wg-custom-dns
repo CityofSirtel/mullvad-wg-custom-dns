@@ -101,7 +101,7 @@ else
     # If replacing, replace
     response=$(curl -sSL https://api.mullvad.net/app/v1/replace-wireguard-key \
                 -H "Content-Type: application/json" \
-                -H "Authorization: Token 8500281859145605" \
+                -H "Authorization: Token $acct_num" \
                 -d '{"old":"'$old_pubkey'","new":"'$pub_key'"}'
               )
 fi
