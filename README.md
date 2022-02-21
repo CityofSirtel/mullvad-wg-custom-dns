@@ -10,6 +10,11 @@ Get the server name from Mullvad [here](https://mullvad.net/en/servers/), ie at5
 ```
 mullvad-wg-custom-dns -s at5-wireguard -a ACCOUNT_NUMBER -d '127.0.0.1' -o wg0.conf
 ```
+Wireguard also accepts comma separated lists of IPs and search domains for DNS
+
+```
+'127.0.0.1, 8.8.8.8, local.example.com'
+```
 
 Make sure you have a free slot for a Wireguard key on your account before you create it, the script will generate a new one for you.
 
