@@ -27,11 +27,13 @@ do
     esac
 done
 
-# TODO: Handle creds in file
 if [ -z "$acct_num" ]; then
     usage
     echo "Must provide Mullvad Account number"
     exit 1
+elif [ -f "$acct_num" ]; then
+    # Creds in file
+    acct_num=$(cat "$acct_num")
 fi
 
 server_data() {
