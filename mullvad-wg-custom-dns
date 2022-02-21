@@ -2,7 +2,7 @@
 
 usage() {
 cat << EOF
-mullvad-wg-customdns -s [server name] -a [account number] -d [dns ip] -o [output file]
+mullvad-wg-custom-dns -s [server name] -a [account number] -d [dns ip] -o [output file]
 EOF
 }
 
