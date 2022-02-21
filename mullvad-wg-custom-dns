@@ -6,7 +6,7 @@ mullvad-wg-custom-dns -s [server name] -a [account number] -d [dns ip] -o [outpu
 EOF
 }
 
-while getopts s:a:d:o: option
+while getopts hs:a:d:o: option
 do
     case "${option}"
         in
@@ -14,6 +14,14 @@ do
         a)acct_num=${OPTARG};;
         d)dns=${OPTARG};;
         o)file=${OPTARG};;
+        h)
+            usage
+            exit 0
+        ;;
+        *)
+            usage
+            exit 1
+        ;;
     esac
 done
 
