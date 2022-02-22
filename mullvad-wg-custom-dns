@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 usage() {
 cat << EOF
@@ -41,10 +41,10 @@ server_data() {
             | sed 's/},{/}\n{/g' | grep $1
           )
     # Check response
-    if [ -z "$data" ] || [ $(wc -l <<< "$data") -gt 1 ]; then
+    if [ -z "$data" ] || [ $(echo "$data" | wc -l) -gt 1 ]; then
         echo "Please provide a valid Mullvad Wireguard server hostname"
         exit 1
-    elif grep -q 'active":false' <<< "$data"; then
+    elif echo "$data" | grep -q 'active":false'; then
         echo "Selected server is not currently active"
         exit 1
     fi
@@ -107,7 +107,7 @@ else
 fi
 
 # Check Response for failure
-if grep -q "ipv4_address" <<< "$response"; then
+if echo "$response" | grep -q "ipv4_address"; then
     ipv4=$(echo $response | sed 's/.*ipv4_address\":\"\(.*\)\",\"ipv6.*/\1/')
     ipv6=$(echo $response | sed 's/.*ipv6_address\":\"\(.*\)\".*/\1/')
 else
